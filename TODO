@@ -2,3 +2,14 @@ TODO:
 
 * Upon invite, detect if we're already in that channel
 * If kicked, delist the channel
+* A user should be able to subscribe for emails using /msg botname subscribe email@address [timezone]
+* Add events for:
+  * User parts
+  * User joins
+  * Private messages
+* Users should be able to unsubscribe to email listings by clicking a link within the email
+* Bot should reconnect upon disconnection
+
+Low Priority:
+
+* Timezone could be inferred from the zone
