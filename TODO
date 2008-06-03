@@ -1,0 +1,4 @@
+TODO:
+
+* Upon invite, detect if we're already in that channel
+* If kicked, delist the channel
