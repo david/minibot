@@ -11,7 +11,6 @@ module MiniBot
       begin
         connect(@options[:server], @options[:port])
         authenticate(@options[:nick], @options[:username], @options[:realname])
-        handle_event :connect
         main_loop
       ensure
         close
