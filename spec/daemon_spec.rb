@@ -24,47 +24,35 @@ describe MiniBot::Daemon do
     d.run
   end
 
-  describe "using" do
+  describe "#dispatch" do
     before do
       @socket = mock("socket", :null_object => true)
 
       TCPSocket.stub!(:new).and_return(@socket)
     end
 
-    it "should join the given channels" do
-      d = daemon :join => %w{ #testch #anothertest }
+    it "should dispatch invites" do
+      d = daemon
 
-      d.stub! :main_loop
-      d.should_receive(:join).with("#testch")
-      d.should_receive(:join).with("#anothertest")
+      tester = mock("tester")
+      tester.should_receive(:call).with("#ior3k", "ior3k")
+      d.event :invite do |channel, user|
+        tester.call channel, user
+      end
 
-      d.run
+      d.send :dispatch, ":ior3k!n=david@89.152.220.123 INVITE nnn :#ior3k"
     end
 
-    describe "#dispatch" do
-      it "should dispatch invites" do
-        d = daemon
+    it "should dispatch messages, unconditionally" do
+      d = daemon
 
-        tester = mock("tester")
-        tester.should_receive(:call).with(d, "#ior3k", "ior3k")
-        d.event :invite do |bot, channel, user|
-          tester.call bot, channel, user
-        end
-
-        d.send :dispatch, ":ior3k!n=david@89.152.220.123 INVITE nnn :#ior3k"
+      tester = mock("tester")
+      tester.should_receive(:call).with("#ior3k", "ior3k", "This is a test message!")
+      d.event :message do |channel, user, message|
+        tester.call channel, user, message
       end
 
-      it "should dispatch messages, unconditionally" do
-        d = daemon
-
-        tester = mock("tester")
-        tester.should_receive(:call).with(d, "#ior3k", "ior3k", "This is a test message!")
-        d.event :message do |bot, channel, user, message|
-          tester.call bot, channel, user, message
-        end
-
-        d.send :dispatch, ":ior3k!n=david@89.152.220.123 PRIVMSG #ior3k :This is a test message!"
-      end
+      d.send :dispatch, ":ior3k!n=david@89.152.220.123 PRIVMSG #ior3k :This is a test message!"
     end
   end
 end

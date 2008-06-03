@@ -3,22 +3,15 @@ require 'socket'
 module MiniBot
   class Daemon
     DEFAULTS = {
-      :join => []
+      :join => [],
+      :port => 6667
     }
-
-    def close
-      @socket.close if @socket
-    end
 
     def run
       begin
-        init_socket(@options[:server], 6667)
-
-        write "NICK #{@options[:nick]}"
-        write "USER #{@options[:username]} xxx xxx :#{@options[:realname]}"
-
-        join_channels @options[:join]
-
+        connect(@options[:server], @options[:port])
+        authenticate(@options[:nick], @options[:username], @options[:realname])
+        handle_event :connect
         main_loop
       ensure
         close
@@ -35,8 +28,13 @@ module MiniBot
 
     private
 
-    def join_channels(channels)
-      channels.each { |channel| join channel }
+    def authenticate(nick, username, realname)
+      write "NICK #{nick}"
+      write "USER #{username} xxx xxx :#{realname}"
+    end
+
+    def close
+      @socket.close if @socket
     end
 
     def initialize(options)
@@ -45,12 +43,10 @@ module MiniBot
     end
 
     def main_loop
-      loop do
-        dispatch(@socket.readline)
-      end
+      loop { dispatch(@socket.readline) }
     end
 
-    def init_socket(server, port)
+    def connect(server, port)
       @socket = TCPSocket.new(server, port)
     end
 
@@ -59,17 +55,17 @@ module MiniBot
     end
 
     def dispatch(command)
-      puts command
-
       if match = (/:(\w+)!.+ INVITE \w+ :(#\w+)/.match command)
         handle_event :invite, match[2], match[1]
       elsif match = (/:(\w+)!.+ PRIVMSG (#\w+) :(.+)/.match command)
         handle_event :message, match[2], match[1], match[3]
+      else
+        handle_event :default, command
       end
     end
 
     def handle_event(event, *args)
-      @event_handlers[event].each { |handler| handler.call self, *args }
+      @event_handlers[event].each { |handler| handler.call *args }
     end
   end
 end
