@@ -6,3 +6,5 @@ TODO:
   * Private messages
 * Add ability to reply both to public (by prefixing the username) and private messages 
 * Bot should reconnect upon disconnection
+* Error handling.
+* Signal trapping for graceful exiting.
