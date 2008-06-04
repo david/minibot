@@ -22,11 +22,6 @@ module MiniBot
 
     private
 
-    def authenticate(nick, username, realname)
-      write "NICK #{nick}"
-      write "USER #{username} xxx xxx :#{realname}"
-    end
-
     def close
       @socket.close if @socket
     end
@@ -44,18 +39,14 @@ module MiniBot
       @socket = TCPSocket.new(server, port)
     end
 
-    def write(str)
-      @socket.print "#{str}\r\n"
+    def authenticate(nick, username, realname)
+      write "NICK #{nick}"
+      write "USER #{username} xxx xxx :#{realname}"
     end
 
-    def dispatch(command)
-      if match = (/:(\w+)!.+ INVITE \w+ :(#\w+)/.match command)
-        send :invited, match[2], match[1]
-      elsif match = (/:(\w+)!.+ PRIVMSG (#\w+) :(.+)/.match command)
-        send :message, match[2], match[1], match[3]
-      else
-        send :default, command
-      end
+    # Used by the Commands module.
+    def socket
+      @socket
     end
   end
 end

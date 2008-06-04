@@ -4,5 +4,10 @@ module MiniBot
       write "JOIN #{channel}"
     end
 
+    private
+
+    def write(str)
+      socket.print "#{str}\r\n"
+    end
   end
 end

@@ -28,24 +28,4 @@ describe MiniBot::Daemon do
     d.instance_variable_set("@socket", socket)
     d.send(:authenticate, 'nick', 'spec', 'Spec User')
   end
-
-  describe "#dispatch" do
-    before do
-      @socket = mock("socket", :null_object => true)
-
-      TCPSocket.stub!(:new).and_return(@socket)
-    end
-
-    it "should dispatch invites" do
-      d = daemon
-      d.should_receive(:invited).with('#ior3k', 'ior3k')
-      d.send :dispatch, ":ior3k!n=david@89.152.220.123 INVITE nnn :#ior3k"
-    end
-
-    it "should dispatch messages" do
-      d = daemon
-      d.should_receive(:message).with('#ior3k', 'ior3k', 'This is a test message!')
-      d.send :dispatch, ":ior3k!n=david@89.152.220.123 PRIVMSG #ior3k :This is a test message!"
-    end
-  end
 end
