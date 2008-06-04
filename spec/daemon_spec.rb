@@ -16,7 +16,6 @@ describe MiniBot::Daemon do
 
     d = daemon
     d.send(:connect, 'irc.freenode.net', 6667)
-    puts d.inspect
     d.instance_variable_get("@socket").should == socket
   end
 
@@ -39,25 +38,13 @@ describe MiniBot::Daemon do
 
     it "should dispatch invites" do
       d = daemon
-
-      tester = mock("tester")
-      tester.should_receive(:call).with("#ior3k", "ior3k")
-      d.event :invite do |channel, user|
-        tester.call channel, user
-      end
-
+      d.should_receive(:invited).with('#ior3k', 'ior3k')
       d.send :dispatch, ":ior3k!n=david@89.152.220.123 INVITE nnn :#ior3k"
     end
 
-    it "should dispatch messages, unconditionally" do
+    it "should dispatch messages" do
       d = daemon
-
-      tester = mock("tester")
-      tester.should_receive(:call).with("#ior3k", "ior3k", "This is a test message!")
-      d.event :message do |channel, user, message|
-        tester.call channel, user, message
-      end
-
+      d.should_receive(:message).with('#ior3k', 'ior3k', 'This is a test message!')
       d.send :dispatch, ":ior3k!n=david@89.152.220.123 PRIVMSG #ior3k :This is a test message!"
     end
   end

@@ -2,6 +2,9 @@ require 'socket'
 
 module MiniBot
   class Daemon
+    include Events
+    include Commands
+
     DEFAULTS = {
       :join => [],
       :port => 6667
@@ -15,14 +18,6 @@ module MiniBot
       ensure
         close
       end
-    end
-
-    def event(sym, *args, &block)
-      @event_handlers[sym] << block
-    end
-
-    def join(channel)
-      write "JOIN #{channel}"
     end
 
     private
@@ -55,16 +50,12 @@ module MiniBot
 
     def dispatch(command)
       if match = (/:(\w+)!.+ INVITE \w+ :(#\w+)/.match command)
-        handle_event :invite, match[2], match[1]
+        send :invited, match[2], match[1]
       elsif match = (/:(\w+)!.+ PRIVMSG (#\w+) :(.+)/.match command)
-        handle_event :message, match[2], match[1], match[3]
+        send :message, match[2], match[1], match[3]
       else
-        handle_event :default, command
+        send :default, command
       end
-    end
-
-    def handle_event(event, *args)
-      @event_handlers[event].each { |handler| handler.call *args }
     end
   end
 end
