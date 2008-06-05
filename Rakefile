@@ -1,7 +1,7 @@
 require 'rubygems'
 require 'rake/gempackagetask'
 
-GEM = "new_gem"
+GEM = "minibot"
 VERSION = "0.0.1"
 AUTHOR = "David Leal"
 EMAIL = "dgleal@gmail.com"
