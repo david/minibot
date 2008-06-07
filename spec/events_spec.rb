@@ -48,14 +48,32 @@ describe "MiniBot::Events" do
 
     it "should dispatch joins" do
       d = EventBot.new
-      d.should_receive(:user_joined)
+      d.should_receive(:user_joined).with('#ior3k', 'ior3k')
       d.send :dispatch, ":ior3k!n=ior3k@213.63.55.41 JOIN :#ior3k"
     end
 
     it "should dispatch parts" do
       d = EventBot.new
-      d.should_receive(:user_parted)
+      d.should_receive(:user_parted).with('#ior3k', 'ior3k')
       d.send :dispatch, ":ior3k!n=ior3k@213.63.55.41 PART :#ior3k"
+    end
+
+    it "should dispatch topic changes" do
+      d = EventBot.new
+      d.should_receive(:topic_changed).with('#ior3k', 'ior3k', 'd00dz!')
+      d.send :dispatch, ":ior3k!n=david@89.152.220.123 TOPIC #ior3k :d00dz!"
+    end
+
+    it "should dispatch when bot is kicked" do
+      d = EventBot.new
+      d.should_receive(:kicked).with('#ior3k', 'ior3k', 'd00dz!')
+      d.send :dispatch, ":ior3k!n=david@89.152.220.123 KICK #ior3k enick :d00dz!"
+    end
+
+    it "should dispatch when user is kicked" do
+      d = EventBot.new
+      d.should_receive(:user_kicked).with('#ior3k', 'ior3k', 'victim', 'd00dz!')
+      d.send :dispatch, ":ior3k!n=david@89.152.220.123 KICK #ior3k victim :d00dz!"
     end
   end
 end
