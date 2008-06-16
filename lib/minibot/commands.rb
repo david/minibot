@@ -1,7 +1,7 @@
 module MiniBot
   module Commands
-    def join(channel)
-      write "JOIN #{channel}"
+    def join(*channels)
+      channels.each { |channel| write "JOIN #{channel}" }
     end
 
     private
