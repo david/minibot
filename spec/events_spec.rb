@@ -58,6 +58,18 @@ describe "MiniBot::Events" do
       d.send :dispatch, ":ior3k!n=ior3k@213.63.55.41 PART :#ior3k"
     end
 
+    it "should dispatch ready" do
+      d = EventBot.new
+      d.should_receive(:ready)
+      d.send :dispatch, ":calvino.freenode.net 001 ior3k :Welcome to the freenode IRC Network ior3k"
+    end
+
+    it "should dispatch errors" do
+      d = EventBot.new
+      d.should_receive(:error).with(433, "Nickname is already in use.")
+      d.send :dispatch, ":card.freenode.net 433 * logbot :Nickname is already in use."
+    end
+
     it "should dispatch topic changes" do
       d = EventBot.new
       d.should_receive(:topic_changed).with('#ior3k', 'ior3k', 'd00dz!')

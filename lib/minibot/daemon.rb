@@ -20,6 +20,12 @@ module MiniBot
       end
     end
 
+    def error(num, message)
+      error = *Events::Constants.constants.select { |c| Events::Constants.const_get(c) == num }
+
+      raise "IRC Error: #{error}: #{message}"
+    end
+
     private
 
     def close
@@ -27,8 +33,9 @@ module MiniBot
     end
 
     def initialize(options)
-      @options = DEFAULTS.merge options
-      @event_handlers = Hash.new { |h, k| h[k] = [] }
+      @options = DEFAULTS.merge options.symbolize_keys
+
+      @options[:username] ||= @options[:nick]
     end
 
     def main_loop
@@ -40,13 +47,19 @@ module MiniBot
     end
 
     def authenticate(nick, username, realname)
+      write "USER #{username} 0 xxx :#{realname}"
       write "NICK #{nick}"
-      write "USER #{username} xxx xxx :#{realname}"
     end
 
     # Used by the Commands module.
     def socket
       @socket
     end
+  end
+end
+
+class Hash
+  def symbolize_keys
+    inject({}) { |h, (k, v)| h[k.to_sym] = v; h }
   end
 end

@@ -7,7 +7,7 @@ module MiniBot
     private
 
     def write(str)
-      @socket.print "#{str}\r\n"
+      socket.print "#{str}\r\n"
     end
 
     def pong

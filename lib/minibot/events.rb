@@ -1,5 +1,7 @@
 module MiniBot
   module Events
+    include Constants
+
     def message(channel, sender, message)
     end
 
@@ -33,32 +35,50 @@ module MiniBot
     def user_kicked(channel, kicker, kicked, message)
     end
 
+    def ready
+    end
+
+    def error(num)
+    end
+
     private
 
     def dispatch(command)
       if match = (/^:(\w+)!.+ PRIVMSG (#\w+) :([^\001].+)/.match command)
-        send :message, match[2], match[1], match[3]
+        message match[2], match[1], match[3]
       elsif match = (/^:(\w+)!.+ JOIN :(#\w+)/.match command)
-        send :user_joined, match[2], match[1]
+        user_joined match[2], match[1]
       elsif match = (/^:(\w+)!.+ PART :(#\w+)/.match command)
-        send :user_parted, match[2], match[1]
+        user_parted match[2], match[1]
       elsif match = (/^:(\w+)!.+ PRIVMSG (#\w+) :\001ACTION (.+)\001/.match command)
-        send :user_action, match[2], match[1], match[3]
+        user_action match[2], match[1], match[3]
       elsif match = (/^:(\w+)!.+ PRIVMSG #{@nick} :(.+)/.match command)
-        send :private_message, match[1], match[2]
+        private_message match[1], match[2]
       elsif match = (/^:(\w+)!.+ INVITE \w+ :(#\w+)/.match command)
-        send :invited, match[2], match[1]
+        invited match[2], match[1]
       elsif match = (/^PING/.match command)
         send :pinged
       elsif match = (/^:(\w+)!.+ TOPIC (#\w+) :(.+)/.match command)
-        send :topic_changed, match[2], match[1], match[3]
+        topic_changed match[2], match[1], match[3]
       elsif match = (/^:(\w+)!.+ KICK (#\w+) #{@nick} :(.+)/.match command)
-        send :kicked, match[2], match[1], match[3]
+        kicked match[2], match[1], match[3]
       elsif match = (/^:(\w+)!.+ KICK (#\w+) (\w+) :(.+)/.match command)
-        send :user_kicked, match[2], match[1], match[3], match[4]
+        user_kicked match[2], match[1], match[3], match[4]
+      elsif match = (/^:\S+ (\d{3}).*?(:.*)?$/.match command)
+        code = match[1].to_i
+
+        if code == RPL_WELCOME
+          ready
+        elsif error?(code)
+          error code, match[2].sub(/:/, '')
+        end
       else
-        send :default, command
+        default command
       end
+    end
+
+    def error?(num)
+      return (400 .. 599).include? num
     end
   end
 end
