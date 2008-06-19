@@ -22,7 +22,7 @@ module MiniBot
         end
       end
 
-      [ topic[1].chomp, meta[1].chomp, Time.at(meta[1].chomp.to_i) ] 
+      [ topic[1].chomp, meta[1].chomp, Time.at(meta[2].chomp.to_i) ] 
     end
 
     private

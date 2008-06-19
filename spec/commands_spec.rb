@@ -29,7 +29,7 @@ describe "MiniBot::Commands" do
       bot.should_receive(:write).with("TOPIC #datamapper")
       bot.stub!(:read_commands)
       bot.stub!(:commands).and_return(commands)
-      Time.should_receive(:at).and_return("whoa")
+      Time.should_receive(:at).with(1212697142).and_return("whoa")
 
       topic, author, time = bot.topic "#datamapper" 
       topic.should == "Documentation! http://datamapper.rubyforge.org/"
