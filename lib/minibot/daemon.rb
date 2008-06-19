@@ -5,25 +5,22 @@ module MiniBot
     include Events
     include Commands
 
+    attr_reader :config, :commands
+
     DEFAULTS = {
-      :join => [],
-      :port => 6667
+      :port => 6667,
+      :channels => []
     }
 
     def run
       begin
-        connect(@options[:server], @options[:port])
-        authenticate(@options[:nick], @options[:username], @options[:realname])
+        connect @config[:server], @config[:port]
+        authenticate @config[:nick], @config[:username], @config[:realname]
+        join *@config[:channels]
         main_loop
       ensure
         close
       end
-    end
-
-    def error(num, message)
-      error = *Events::Constants.constants.select { |c| Events::Constants.const_get(c) == num }
-
-      raise "IRC Error: #{error}: #{message}"
     end
 
     private
@@ -32,14 +29,38 @@ module MiniBot
       @socket.close if @socket
     end
 
-    def initialize(options)
-      @options = DEFAULTS.merge options.symbolize_keys
+    def initialize(config)
+      @config = DEFAULTS.merge config
 
-      @options[:username] ||= @options[:nick]
+      @config[:username] ||= @config[:nick]
+      @config[:realname] ||= @config[:nick]
+      @commands = []
     end
 
     def main_loop
-      loop { dispatch(@socket.readline) }
+      loop do 
+        read_commands
+        while c = next_command
+          dispatch c
+        end
+      end
+    end
+
+    def read_commands
+      buffer = @socket.recvfrom(512).first
+      commands = buffer.split /\n/
+
+      @commands.last << commands.shift if @commands.last && @commands.last[-1] != ?\r
+
+      @commands += commands
+    end
+
+    def next_command
+      if @commands.first && @commands.first[-1] == ?\r
+        @commands.shift.chomp
+      else
+        nil
+      end
     end
 
     def connect(server, port)
@@ -52,14 +73,7 @@ module MiniBot
     end
 
     # Used by the Commands module.
-    def socket
-      @socket
-    end
+    attr_reader :socket
   end
 end
 
-class Hash
-  def symbolize_keys
-    inject({}) { |h, (k, v)| h[k.to_sym] = v; h }
-  end
-end

@@ -38,7 +38,7 @@ module MiniBot
     def ready
     end
 
-    def error(num)
+    def error(num, message)
     end
 
     private
@@ -48,7 +48,7 @@ module MiniBot
         message match[2], match[1], match[3]
       elsif match = (/^:(\w+)!.+ JOIN :(#\w+)/.match command)
         user_joined match[2], match[1]
-      elsif match = (/^:(\w+)!.+ PART :(#\w+)/.match command)
+      elsif match = (/^:(\w+)!.+ PART (#\w+)/.match command)
         user_parted match[2], match[1]
       elsif match = (/^:(\w+)!.+ PRIVMSG (#\w+) :\001ACTION (.+)\001/.match command)
         user_action match[2], match[1], match[3]

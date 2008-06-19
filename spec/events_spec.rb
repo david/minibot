@@ -55,7 +55,7 @@ describe "MiniBot::Events" do
     it "should dispatch parts" do
       d = EventBot.new
       d.should_receive(:user_parted).with('#ior3k', 'ior3k')
-      d.send :dispatch, ":ior3k!n=ior3k@213.63.55.41 PART :#ior3k"
+      d.send :dispatch, ":ior3k!n=ior3k@213.63.55.41 PART #ior3k"
     end
 
     it "should dispatch ready" do

@@ -19,4 +19,22 @@ describe "MiniBot::Commands" do
       bot.join "#testchannel", "#anotherchannel"
     end
   end
+
+  describe "#topic" do
+    it "should return the right data" do
+      commands = [ 
+        ":zelazny.freenode.net 332 ee123 #datamapper :Documentation! http://datamapper.rubyforge.org/",
+        ":zelazny.freenode.net 333 ee123 #datamapper ssmoot 1212697142" ]
+      bot = CommandBot.new
+      bot.should_receive(:write).with("TOPIC #datamapper")
+      bot.stub!(:read_commands)
+      bot.stub!(:commands).and_return(commands)
+      Time.should_receive(:at).and_return("whoa")
+
+      topic, author, time = bot.topic "#datamapper" 
+      topic.should == "Documentation! http://datamapper.rubyforge.org/"
+      author.should == "ssmoot"
+      time.should == "whoa"
+    end
+  end
 end
