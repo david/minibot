@@ -2,34 +2,28 @@ require 'ostruct'
 
 module MiniBot
   module Commands
+    include Events::Constants
+
     def join(*channels)
       channels.each { |channel| write "JOIN #{channel}" }
     end
 
-    def topic(channel)
-      write "TOPIC #{channel}"
+    TOPIC_REPLIES = [ RPL_NOTOPIC, [ RPL_TOPIC, RPL_TOPIC_META ], RPL_TOPIC ]
 
-      # TODO: This is ugly.
-      topic = meta = nil
-      until topic && meta
-        read_commands
-        commands.each do |c|
-          if (match = /:\S+ 332 \S+ #{channel} :(.+)/.match c)
-            topic = match
-          elsif (match = /:\S+ 333 \S+ #{channel} (.+) (\d+)/.match c)
-            meta = match
-          end
+    def topic(channel)
+      topic = author = timestamp = nil
+      server.write "TOPIC #{channel}", *TOPIC_REPLIES do |code, reply|
+        if code == RPL_TOPIC
+          topic = reply
+        elsif code == RPL_TOPIC_META
+          author, timestamp = *reply.split
         end
       end
 
-      [ topic[1].chomp, meta[1].chomp, Time.at(meta[2].chomp.to_i) ] 
+      [ topic, author, timestamp && Time.at(timestamp.to_i) ] 
     end
 
     private
-
-    def write(str)
-      socket.print "#{str}\r\n"
-    end
 
     def pong
       write "PONG #{@host_name}"

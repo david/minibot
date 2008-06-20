@@ -12,3 +12,4 @@ TODO:
 * Logging.
 * Error handling.
 * Signal trapping for graceful exiting.
+* Add ability to stop logging for a given period of time

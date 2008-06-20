@@ -66,8 +66,8 @@ describe "MiniBot::Events" do
 
     it "should dispatch errors" do
       d = EventBot.new
-      d.should_receive(:error).with(433, "Nickname is already in use.")
-      d.send :dispatch, ":card.freenode.net 433 * logbot :Nickname is already in use."
+      d.should_receive(:error).with("433", "Nickname is already in use.")
+      d.send :dispatch, ":card.freenode.net 433 logbot :Nickname is already in use."
     end
 
     it "should dispatch topic changes" do

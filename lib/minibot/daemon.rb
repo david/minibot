@@ -5,7 +5,7 @@ module MiniBot
     include Events
     include Commands
 
-    attr_reader :config, :commands
+    attr_reader :config, :server
 
     DEFAULTS = {
       :port => 6667,
@@ -19,14 +19,18 @@ module MiniBot
         join *@config[:channels]
         main_loop
       ensure
-        close
+        disconnect
       end
     end
 
     private
 
-    def close
-      @socket.close if @socket
+    def connect(server, port)
+      @server = Server.connect server, port
+    end
+
+    def disconnect
+      @server.disconnect
     end
 
     def initialize(config)
@@ -34,46 +38,18 @@ module MiniBot
 
       @config[:username] ||= @config[:nick]
       @config[:realname] ||= @config[:nick]
-      @commands = []
     end
 
     def main_loop
-      loop do 
-        read_commands
-        while c = next_command
-          dispatch c
-        end
+      while msg = @server.next_message
+        dispatch msg
       end
-    end
-
-    def read_commands
-      buffer = @socket.recvfrom(512).first
-      commands = buffer.split /\n/
-
-      @commands.last << commands.shift if @commands.last && @commands.last[-1] != ?\r
-
-      @commands += commands
-    end
-
-    def next_command
-      if @commands.first && @commands.first[-1] == ?\r
-        @commands.shift.chomp
-      else
-        nil
-      end
-    end
-
-    def connect(server, port)
-      @socket = TCPSocket.new(server, port)
     end
 
     def authenticate(nick, username, realname)
-      write "USER #{username} 0 xxx :#{realname}"
-      write "NICK #{nick}"
+      @server.write "USER #{username} 0 xxx :#{realname}"
+      @server.write "NICK #{nick}"
     end
-
-    # Used by the Commands module.
-    attr_reader :socket
   end
 end
 

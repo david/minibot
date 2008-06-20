@@ -20,7 +20,7 @@ module MiniBot
     def invited(channel, nick)
     end
 
-    def default(command_str)
+    def default(message_str)
     end
 
     def pinged
@@ -43,42 +43,44 @@ module MiniBot
 
     private
 
-    def dispatch(command)
-      if match = (/^:(\w+)!.+ PRIVMSG (#\w+) :([^\001].+)/.match command)
-        message match[2], match[1], match[3]
-      elsif match = (/^:(\w+)!.+ JOIN :(#\w+)/.match command)
-        user_joined match[2], match[1]
-      elsif match = (/^:(\w+)!.+ PART (#\w+)/.match command)
-        user_parted match[2], match[1]
-      elsif match = (/^:(\w+)!.+ PRIVMSG (#\w+) :\001ACTION (.+)\001/.match command)
-        user_action match[2], match[1], match[3]
-      elsif match = (/^:(\w+)!.+ PRIVMSG #{@nick} :(.+)/.match command)
-        private_message match[1], match[2]
-      elsif match = (/^:(\w+)!.+ INVITE \w+ :(#\w+)/.match command)
-        invited match[2], match[1]
-      elsif match = (/^PING/.match command)
-        send :pinged
-      elsif match = (/^:(\w+)!.+ TOPIC (#\w+) :(.+)/.match command)
-        topic_changed match[2], match[1], match[3]
-      elsif match = (/^:(\w+)!.+ KICK (#\w+) #{@nick} :(.+)/.match command)
-        kicked match[2], match[1], match[3]
-      elsif match = (/^:(\w+)!.+ KICK (#\w+) (\w+) :(.+)/.match command)
-        user_kicked match[2], match[1], match[3], match[4]
-      elsif match = (/^:\S+ (\d{3}).*?(:.*)?$/.match command)
-        code = match[1].to_i
+    def dispatch(srv_msg)
+      if match = /^:(\w+)!.+ PRIVMSG (#\w+) :([^\001].+)/.match(srv_msg)
+        message *match.values_at(2, 1, 3)
+      elsif match = /^:(\w+)!.+ JOIN :(#\w+)/.match(srv_msg)
+        user_joined *match.values_at(2, 1)
+      elsif match = /^:(\w+)!.+ PART (#\w+)/.match(srv_msg)
+        user_parted *match.values_at(2, 1)
+      elsif match = /^:(\w+)!.+ PRIVMSG (#\w+) :\001ACTION (.+)\001/.match(srv_msg)
+        user_action *match.values_at(2, 1, 3)
+      elsif match = /^:(\w+)!.+ PRIVMSG #{@nick} :(.+)/.match(srv_msg)
+        private_message *match.values_at(1, 2)
+      elsif match = /^:(\w+)!.+ INVITE \w+ :(#\w+)/.match(srv_msg)
+        invited *match.values_at(2, 1)
+      elsif match = /^PING/.match(srv_msg)
+        pinged
+      elsif match = /^:(\w+)!.+ TOPIC (#\w+) :(.+)/.match(srv_msg)
+        topic_changed *match.values_at(2, 1, 3)
+      elsif match = /^:(\w+)!.+ KICK (#\w+) #{@nick} :(.+)/.match(srv_msg)
+        kicked *match.values_at(2, 1, 3)
+      elsif match = /^:(\w+)!.+ KICK (#\w+) (\w+) :(.+)/.match(srv_msg)
+        user_kicked *match.values_at(2, 1, 3, 4)
+      elsif match = /^:\S+ #{RPL_WELCOME} .*?(:.*)?$/.match(srv_msg)
+        ready
+      elsif match = /^:\S+ (\d{3}) \S+ (:.*)?$/.match(srv_msg)
+        code, msg = *match.values_at(1, 2)
 
-        if code == RPL_WELCOME
-          ready
-        elsif error?(code)
-          error code, match[2].sub(/:/, '')
+        if error?(code)
+          error code, msg.sub(/:/, '')
+        else
+          default(srv_msg)
         end
       else
-        default command
+        default(srv_msg)
       end
     end
 
     def error?(num)
-      return (400 .. 599).include? num
+      return ("400" .. "599").include? num
     end
   end
 end
