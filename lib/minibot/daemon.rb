@@ -41,7 +41,7 @@ module MiniBot
     end
 
     def main_loop
-      while msg = @server.next_message
+      while msg = @server.read
         dispatch msg
       end
     end

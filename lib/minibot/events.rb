@@ -44,25 +44,30 @@ module MiniBot
     private
 
     def dispatch(srv_msg)
-      if match = /^:(\w+)!.+ PRIVMSG (#\w+) :([^\001].+)/.match(srv_msg)
-        message *match.values_at(2, 1, 3)
-      elsif match = /^:(\w+)!.+ JOIN :(#\w+)/.match(srv_msg)
+      if match = /^:(\w+)!.+ PRIVMSG (\S+) :([^\001].+)/.match(srv_msg)
+        target, origin, message = *match.values_at(2, 1, 3)
+        unless target == @nick
+          message target, origin, message
+        else
+          private_message origin, message
+        end
+      elsif match = /^:(\w+)!.+ JOIN :(\S+)/.match(srv_msg)
         user_joined *match.values_at(2, 1)
-      elsif match = /^:(\w+)!.+ PART (#\w+)/.match(srv_msg)
+      elsif match = /^:(\w+)!.+ PART (\S+)/.match(srv_msg)
         user_parted *match.values_at(2, 1)
-      elsif match = /^:(\w+)!.+ PRIVMSG (#\w+) :\001ACTION (.+)\001/.match(srv_msg)
+      elsif match = /^:(\w+)!.+ PRIVMSG (\S+) :\001ACTION (.+)\001/.match(srv_msg)
         user_action *match.values_at(2, 1, 3)
       elsif match = /^:(\w+)!.+ PRIVMSG #{@nick} :(.+)/.match(srv_msg)
         private_message *match.values_at(1, 2)
-      elsif match = /^:(\w+)!.+ INVITE \w+ :(#\w+)/.match(srv_msg)
+      elsif match = /^:(\w+)!.+ INVITE \w+ :(\S+)/.match(srv_msg)
         invited *match.values_at(2, 1)
       elsif match = /^PING/.match(srv_msg)
         pinged
-      elsif match = /^:(\w+)!.+ TOPIC (#\w+) :(.+)/.match(srv_msg)
+      elsif match = /^:(\w+)!.+ TOPIC (\S+) :(.+)/.match(srv_msg)
         topic_changed *match.values_at(2, 1, 3)
-      elsif match = /^:(\w+)!.+ KICK (#\w+) #{@nick} :(.+)/.match(srv_msg)
+      elsif match = /^:(\w+)!.+ KICK (\S+) #{@nick} :(.+)/.match(srv_msg)
         kicked *match.values_at(2, 1, 3)
-      elsif match = /^:(\w+)!.+ KICK (#\w+) (\w+) :(.+)/.match(srv_msg)
+      elsif match = /^:(\w+)!.+ KICK (\S+) (\w+) :(.+)/.match(srv_msg)
         user_kicked *match.values_at(2, 1, 3, 4)
       elsif match = /^:\S+ #{RPL_WELCOME} .*?(:.*)?$/.match(srv_msg)
         ready

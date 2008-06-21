@@ -13,15 +13,15 @@ describe "MiniBot::Commands" do
 
   describe "#join" do
     it "should join a channel" do
-      bot = CommandBot.new
-      bot.should_receive(:write).with("JOIN #testchannel")
+      bot = CommandBot.new(mock "server")
+      bot.server.should_receive(:write).with("JOIN #testchannel")
       bot.join "#testchannel"
     end
 
     it "should join multiple channels" do
-      bot = CommandBot.new
-      bot.should_receive(:write).with("JOIN #testchannel")
-      bot.should_receive(:write).with("JOIN #anotherchannel")
+      bot = CommandBot.new(mock "server")
+      bot.server.should_receive(:write).with("JOIN #testchannel")
+      bot.server.should_receive(:write).with("JOIN #anotherchannel")
       bot.join "#testchannel", "#anotherchannel"
     end
   end
@@ -30,7 +30,7 @@ describe "MiniBot::Commands" do
     it "should return the topic data" do
       bot = CommandBot.new(mock "server")
       bot.server.should_receive(:write).
-        with("TOPIC #datamapper", *MiniBot::Commands::TOPIC_REPLIES).
+        with("TOPIC #datamapper", *MiniBot::Commands::EXPECTED_REPLIES_TOPIC).
         and_yield("332", "Documentation! http://datamapper.rubyforge.org/").
         and_yield("333", "ssmoot 1212697142")
       Time.should_receive(:at).with(1212697142).and_return("whoa")
@@ -44,7 +44,7 @@ describe "MiniBot::Commands" do
     it "should return nil for no topic" do
       bot = CommandBot.new(mock "server")
       bot.server.should_receive(:write).
-        with("TOPIC #datamapper", *MiniBot::Commands::TOPIC_REPLIES).
+        with("TOPIC #datamapper", *MiniBot::Commands::EXPECTED_REPLIES_TOPIC).
         and_yield("331", "There isn't a topic.")
 
       topic, author, time = bot.topic "#datamapper" 
@@ -56,7 +56,7 @@ describe "MiniBot::Commands" do
     it "should return only the topic for servers that don't send the metadata" do
       bot = CommandBot.new(mock "server")
       bot.server.should_receive(:write).
-        with("TOPIC #datamapper", *MiniBot::Commands::TOPIC_REPLIES).
+        with("TOPIC #datamapper", *MiniBot::Commands::EXPECTED_REPLIES_TOPIC).
         and_yield("332", "TOPIC!").
         and_yield("400", "Mary had a little lamb")
 

@@ -5,14 +5,12 @@ module MiniBot
     include Events::Constants
 
     def join(*channels)
-      channels.each { |channel| write "JOIN #{channel}" }
+      channels.each { |channel| server.write "JOIN #{channel}" }
     end
-
-    TOPIC_REPLIES = [ RPL_NOTOPIC, [ RPL_TOPIC, RPL_TOPIC_META ], RPL_TOPIC ]
 
     def topic(channel)
       topic = author = timestamp = nil
-      server.write "TOPIC #{channel}", *TOPIC_REPLIES do |code, reply|
+      server.write "TOPIC #{channel}", *EXPECTED_REPLIES_TOPIC do |code, reply|
         if code == RPL_TOPIC
           topic = reply
         elsif code == RPL_TOPIC_META
