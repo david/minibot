@@ -15,7 +15,7 @@ end
 desc "Run all specs"
 Spec::Rake::SpecTask.new('spec') do |t|
   t.spec_files = FileList['spec/**/*.rb']
-  t.spec_opts = %w{--format specdoc --color}
+  t.spec_opts = %w{--color}
 end
 
 desc "Run all specs with rcov"
