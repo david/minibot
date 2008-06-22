@@ -21,10 +21,25 @@ module MiniBot
       [ topic, author, timestamp && Time.at(timestamp.to_i) ] 
     end
 
+    def say(target, message)
+    end
+
+    def set_user(username, realname)
+      @server.write "USER #{username} 0 xxx :#{realname}"
+    end
+
+    def set_nick(nick)
+      @server.write "NICK #{nick}"
+    end
+
+    def nickserv(command)
+      @server.write "NICKSERV #{command}"
+    end
+
     private
 
     def pong
-      write "PONG #{@host_name}"
+      @server.write "PONG #{@host_name}"
     end
   end
 end

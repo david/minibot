@@ -17,21 +17,14 @@ describe MiniBot::Daemon do
       socket = mock("socket", :null_object => true)
 
       d = daemon
-      d.instance_variable_get("@config")[:port].should == 6667
+      d.instance_variable_get("@port").should == 6667
     end
 
     it "should use the nick when the username is not specified" do
       socket = mock("socket", :null_object => true)
 
       d = daemon(:username => nil)
-      d.instance_variable_get("@config")[:username].should == 'nick'
-    end
-
-    it "should return an empty array when no channels are specified" do
-      socket = mock("socket", :null_object => true)
-
-      d = daemon
-      d.instance_variable_get("@config")[:channels].should == []
+      d.instance_variable_get("@username").should == 'nick'
     end
   end
 
@@ -41,28 +34,25 @@ describe MiniBot::Daemon do
     d.send :connect, 'server', 'port'
   end
 
-  it "should authenticate" do
-    server = mock("server", :null_object => true)
-    server.should_receive(:write).with("USER spec 0 xxx :Spec User").ordered
-    server.should_receive(:write).with("NICK nick").ordered
-
+  it "should login" do
     d = daemon
-    d.instance_variable_set("@server", server)
-    d.should_receive(:server).any_number_of_times.and_return(server)
-    d.send(:authenticate, 'nick', 'spec', 'Spec User')
+    d.should_receive(:set_user).with('user', 'real name')
+    d.send :login, 'user', 'real name'
   end
 
-  describe "running" do
-    it "should auto join channels" do
-      channels = %w{#one #two}
-      d = daemon({ :channels => channels })
-      d.stub!(:connect)
-      d.stub!(:authenticate)
-      d.stub!(:main_loop)
-      d.stub!(:disconnect)
+  describe "should identify" do
+    it "with a password" do
+      d = daemon
+      d.should_receive(:set_nick).with('nick')
+      d.should_receive(:nickserv).with('identify hello')
+      d.send :identify, 'nick', 'hello'
+    end
 
-      d.should_receive(:join).with("#one", "#two")
-      d.run
+    it "without a password" do
+      d = daemon
+      d.should_receive(:set_nick).with('nick')
+      d.should_not_receive(:nickserv)
+      d.send :identify, 'nick'
     end
   end
 end

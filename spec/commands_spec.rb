@@ -66,4 +66,22 @@ describe "MiniBot::Commands" do
       time.should be_nil
     end
   end
+
+  it "should send the NICKSERV command" do
+    bot = CommandBot.new(mock "server")
+    bot.server.should_receive(:write).with("NICKSERV identify hullo")
+    bot.nickserv "identify hullo"
+  end
+
+  it "should send the USER command" do
+    bot = CommandBot.new(mock "server")
+    bot.server.should_receive(:write).with("USER dude 0 xxx :Real name")
+    bot.set_user "dude", "Real name"
+  end
+
+  it "should send the NICK command" do
+    bot = CommandBot.new(mock "server")
+    bot.server.should_receive(:write).with("NICK a_nick")
+    bot.set_nick "a_nick"
+  end
 end
