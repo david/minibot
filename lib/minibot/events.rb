@@ -41,7 +41,7 @@ module MiniBot
     def error(num, message)
     end
 
-    private
+    protected
 
     def dispatch(srv_msg)
       if match = /^:(\w+)!.+ PRIVMSG (\S+) :([^\001].+)/.match(srv_msg)

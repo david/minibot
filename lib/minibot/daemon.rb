@@ -13,9 +13,17 @@ module MiniBot
         login @username, @realname
         identify @nick, @nickserv_pwd
         main_loop
+      rescue Exception => e
+        handle_exception(e)
+        raise e
       ensure
         disconnect
       end
+    end
+
+    protected
+
+    def handle_exception(e)
     end
 
     private

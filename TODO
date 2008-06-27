@@ -9,6 +9,7 @@ TODO:
 * Detect when using a registered nick. 
 * Add ability to reply both to public (by prefixing the username) and private messages 
 * Bot should reconnect upon disconnection
-* Logging.
-* Error handling.
-* Signal trapping for graceful exiting.
+* IRC protocol error handling (probably each command should return its own errors).
+* Trap signals.
+* Use non blocking IO for logging when available.
+* Find out what's the problem with heinlein.freenode.net
