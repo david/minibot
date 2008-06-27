@@ -1,5 +1,5 @@
 GEM = "minibot"
-VERSION = "0.0.1"
+VERSION = "0.1.0"
 AUTHOR = "David Leal"
 EMAIL = "dgleal@gmail.com"
 HOMEPAGE = "http://davidleal.com"
