@@ -13,3 +13,4 @@ TODO:
 * Trap signals.
 * Use non blocking IO for logging when available.
 * Find out what's the problem with heinlein.freenode.net
+* Rethink all the configuration model. It's getting messy.
