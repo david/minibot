@@ -31,8 +31,8 @@ describe "MiniBot::Commands" do
       bot = CommandBot.new(mock "server")
       bot.server.should_receive(:write).
         with("TOPIC #datamapper", *MiniBot::Commands::EXPECTED_REPLIES_TOPIC).
-        and_yield("332", "Documentation! http://datamapper.rubyforge.org/").
-        and_yield("333", "ssmoot 1212697142")
+        and_yield("332", "#datamapper :Documentation! http://datamapper.rubyforge.org/").
+        and_yield("333", "#datamapper ssmoot 1212697142")
       Time.should_receive(:at).with(1212697142).and_return("whoa")
 
       topic, author, time = bot.topic "#datamapper" 
@@ -45,7 +45,7 @@ describe "MiniBot::Commands" do
       bot = CommandBot.new(mock "server")
       bot.server.should_receive(:write).
         with("TOPIC #datamapper", *MiniBot::Commands::EXPECTED_REPLIES_TOPIC).
-        and_yield("331", "There isn't a topic.")
+        and_yield("331", "#datamapper :There isn't a topic.")
 
       topic, author, time = bot.topic "#datamapper" 
       topic.should be_nil
@@ -57,8 +57,8 @@ describe "MiniBot::Commands" do
       bot = CommandBot.new(mock "server")
       bot.server.should_receive(:write).
         with("TOPIC #datamapper", *MiniBot::Commands::EXPECTED_REPLIES_TOPIC).
-        and_yield("332", "TOPIC!").
-        and_yield("400", "Mary had a little lamb")
+        and_yield("332", "#channel :TOPIC!").
+        and_yield("400", "#channel :Mary had a little lamb")
 
       topic, author, time = bot.topic "#datamapper" 
       topic.should == "TOPIC!"

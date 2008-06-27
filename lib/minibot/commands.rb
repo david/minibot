@@ -12,13 +12,13 @@ module MiniBot
       topic = author = timestamp = nil
       server.write "TOPIC #{channel}", *EXPECTED_REPLIES_TOPIC do |code, reply|
         if code == RPL_TOPIC
-          topic = reply
+          channel, topic = reply.split /\s+/, 2
         elsif code == RPL_TOPIC_META
-          author, timestamp = *reply.split
+          channel, author, timestamp = *reply.split
         end
       end
 
-      [ topic, author, timestamp && Time.at(timestamp.to_i) ] 
+      [ topic && topic[1 .. -1], author, timestamp && Time.at(timestamp.to_i) ] 
     end
 
     def say(target, message)
