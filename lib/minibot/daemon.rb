@@ -1,4 +1,5 @@
 require 'socket'
+require 'etc'
 
 module MiniBot
   class Daemon
@@ -35,6 +36,13 @@ module MiniBot
       @nickserv_pwd = config[:nickserv_pwd]
       @username = config[:username] || @nick
       @realname = config[:realname] || @nick
+    end
+
+    def run_as(user, group)
+      uid = Etc.getpwnam(user).uid
+      gid = Etc.getgrnam(group).gid
+      Process::GID.change_privilege gid
+      Process::UID.change_privilege uid
     end
 
     def connect(server, port = 6667)
