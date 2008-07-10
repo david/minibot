@@ -13,13 +13,54 @@ module MiniBot
     end
 
     def read
-      if @messages.first && message_complete?(@messages.first)
-        to_message(@messages.shift)
-      else
-        read_messages
+      if @buffer.empty?
+        @buffer << @socket.recvfrom(512).first
         read
+      elsif @buffer.start_with? "\r\n"
+        @buffer = @buffer[2 .. -1]
+        read
+      else
+        message, buffer = *@buffer.split(/\r\n/, 2)
+
+        if !message.empty? && buffer
+          @buffer = buffer
+          message
+        else
+          @buffer << @socket.recvfrom(512).first
+          read
+        end
       end
     end
+
+    def write(msg, *replies)
+      print_to_socket msg
+
+      unless replies.empty?
+        buffer = []
+        matches = nil
+        until matches
+          replies.map { |r| Array === r ? r : [ r ] }.each do |r|
+            break if (matches = match(r))
+          end
+
+          buffer << read unless matches
+        end
+
+        unread *buffer
+
+        if block_given?
+          matches.each { |m| yield *m }
+        else
+          matches
+        end
+      end
+    end
+
+    def disconnect
+      @socket.close if @socket
+    end
+
+    private
 
     def match_code(code, message)
       if (match = reply?(message)) && match[1] == code
@@ -29,74 +70,23 @@ module MiniBot
       end
     end
 
-    def write(msg, *replies)
-      @socket.print "#{msg}\r\n"
+    def match(codes)
+      catch :halt do 
+        matches = []
 
-      unless replies.empty?
-        index = 0
-        matches, messages = catch :halted do
-          loop do
-            index, message = next_message(index)
-            replies.each do |r|
-              case r
-              when String
-                if match = /:\S+ (#{r}) \S+ :?(.+)/.match(message)
-                  throw :halted, [[ match ], [ message ]]
-                end
-              when Array
-                matched = []
-                messages = []
-                r.each do |ri|
-                  if match = /:\S+ (#{ri}) \S+ :?(.+)/.match(message)
-                    matched << match
-                    messages << message
-                    index, message = next_message(index)
-                  elsif !matched.empty?
-                    index -= matched.length
-                    message = matched.first
-                    break
-                  end
-                end
+        codes.each do |code|
+          msg = read
 
-                throw :halted, [matched, messages] unless matched.empty?
-              else
-                raise ArgumentError, "Unknown reply argument type: #{r.inspect}", caller
-              end
-            end
+          if match = match_code(code, msg)
+            matches << match
+          else
+            unread *matches
+            throw :halt, nil
           end
         end
 
-        messages.each { |m| delete_message(m) }
-        matches.each { |m| yield m[1, 2] }
+        matches
       end
-    end
-
-    def extract(regexp)
-
-    end
-
-    def disconnect
-      @socket.close if @socket
-    end
-
-    private
-
-    def delete_message(m)
-      @messages.delete("#{m}\r")
-    end
-
-    def message_complete?(message)
-      message[-1] == ?\r
-    end
-
-    def to_message(raw)
-      raw.chomp
-    end
-
-    def next_message(index)
-      read_messages if !@messages[index] || !message_complete?(@messages[index])
-
-      [index + 1, to_message(@messages[index])]
     end
 
     def reply?(msg)
@@ -106,16 +96,15 @@ module MiniBot
     def initialize(server, port)
       @server = server
       @port = port
-      @messages = []
+      @buffer = ""
     end
 
-    def read_messages
-      buffer = @socket.recvfrom(512).first
-      messages = buffer.split /\n/
+    def print_to_socket(msg)
+      @socket.print "#{msg}\r\n"
+    end
 
-      @messages.last << messages.shift if @messages.last && @messages.last[-1] != ?\r
-
-      @messages += messages
+    def unread(*messages)
+      @buffer = messages.join("\r\n") << @buffer
     end
   end
 end
